@@ -1,0 +1,57 @@
+#+OPTIONS: ^:nil
+
+* Python Data Layer
+
+This is implemenation of python data layer based on python_layer in caffe.
+
+** TO-DO
+
+1. [X] Add siamese layer, triplet sampling layer implementations[100%]
+   1. [X] Siamese layer: this is omitted since training triplet network is more powerful
+   2. [X] Triplet Layer
+2. [X] Add free sampling functions / interface to sampling functions in python data layer: see sampler classes
+3. [X] Write documents and instructions on how to use these layers (what's the input, what's the output)
+4. [X] List all the options in param_str for python layer
+5. [ ] Implement multiple label layer: output label as an array (0 or 1, with 1 means there is a corresponding label)
+
+
+** Fileds and Keywords in 'param_str':
+
+- batch_size: default 256
+- resize: default -1, don't do any resizing. Otherwise, could be either int values (resize into square image) or list (give the WxH size)
+- mean_file: default NA, filename / path of image mean file, or in formate of [mean_r, mean_g, mean_b]
+- source_type: type of input source, could be "CSV", "LMDB", "BCF". Default = "CSV"
+- Input Related (used by DataManager):
+  - source: source of input file name
+  - BCF MODE: bcf is compressed binary file format used in Adobe Research Lab
+    - bcf_mode: FILE or MEM, read BCF into memory or open file in cache, default FILE
+    - labels: the file name of label files, in numpy binary file format, each row should be labels for one sample
+  - CSV MODE: in this mode, the input is a csv file, separator could be space, tab, or comma. The first column is image / sample file name, and the rest columns are labels. If there are multiple columns labels, it will read all labels and concate as a string
+    - root: root dir relative to the file name in filename column, by default None
+  - LMDB MODE: read compressed data from LMDB, will use caffe.io.caffe_pb2.Datum to decode data
+    - labels: path to Label LMDB. If exists, will read labels from label LMDB, otherwise, will use datum.label from data LMDB as labels
+- compressed: control weather or not to decode all images before generating batches
+
+*** TripletDataLayer:
+- prefetch: if using a prefetch process or not, default = False
+- type: the type of sampling (not case sensitive), including:
+  - *RANDOM*: random sampling
+  - *RANDOM_MULTILABEL*: randomly sampling with assumption of multilabel. A margin (similarity of positive pair - similarity of negative pair) will also be provided as label
+  - *HARD_MULTILABEL*: hard negative sampling based on multiple labels. It will pick several negative samples and find one with smallest similarity with the anchor image based on their labels.
+  - *HARD*: hard negative sampling based on pre-calculated similarity graph. The graph is in the format of adjacant matrix.
+These options are used for hard negative sampling:
+- k: how many negative smaples to choose as candidates to find the hardest negative one.
+- m: similarity graph filename, in format of python dict (or json, or CSV)
+- n: number of iterations to run randomly sampling before hard negative sampling, to ensure the network well initialized in the beginning.
+
+*** MultiLabelLayer:
+- multilabel: if the data / problem is multiple labels.
+  - Default: False
+  - if False: will output only 1 label for each datum
+  - if True: will output a vector of "label_dim"
+- label dim: dimension of label vectors (or totally number of labels)
+  - default: None, will calculate by traveling all data samples automatically
+
+** How to deal with multi-labels
+
+   The way to deal with multiple labe is to encode all labels for one sample into a string separated by ":", for example, sample with labels 17, 24, 35 will be encoded into string "17:24:35".
