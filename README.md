@@ -64,3 +64,19 @@ These options are used for hard negative sampling:
 ## How to deal with multi-labels<a id="sec-1-3" name="sec-1-3"></a>
 
 The way to deal with multiple labe is to encode all labels for one sample into a string separated by ":", for example, sample with labels 17, 24, 35 will be encoded into string "17:24:35".
+
+## Usage Example:
+```
+layer {
+  name: "input"
+  type: "Python"
+  top: "Python1"
+  top: "Python2"
+  top: "Python3"
+  python_param {
+    module: "TripletDataLayer"
+    layer: "TripletDataLayer"
+    param_str: "{\'source_type\': \'CSV\', \'root\': \'../data/ALISC/train_image\', \'batch_size\': 32, \'source\': \'../data/ALISC/train_cat.csv\', \'prefetch\': True, \'type\': \'RANDOM\', \'resize\': [256, 256], \'compressed\': Tru
+  }
+}
+```
