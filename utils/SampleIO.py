@@ -33,7 +33,7 @@ def extract_sample(img, image_mean=None, resize=-1):
         # change channel for caffe:
         img_data = img_data.transpose(2, 0, 1)  # to CxHxW
         # substract_mean
-        if image_mean:
+        if image_mean is not None:
             img_data = substract_mean(img_data, image_mean)
         return img_data
     except:

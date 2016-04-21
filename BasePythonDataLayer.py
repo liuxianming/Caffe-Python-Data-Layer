@@ -108,6 +108,7 @@ class BasePythonDataLayer(caffe.Layer):
                     self._mean = np.array(caffe.io.blobproto_to_array(blob))[0]
             else:
                 self._mean = self._mean_file
+                self._mean = np.array(self._mean)
         else:
             self._mean = None
 
@@ -135,6 +136,7 @@ class BasePythonDataLayer(caffe.Layer):
     def forward(self, bottom, top):
         blob = self.get_next_minibatch()
         for i in range(len(blob)):
+            top[i].reshape(*(blob[i].shape))
             top[i].data[...] = blob[i].astype(np.float32, copy=False)
 
     def backward(self, top, propagate_down, bottom):
